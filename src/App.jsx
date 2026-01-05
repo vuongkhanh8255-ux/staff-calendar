@@ -14,8 +14,8 @@ function App() {
   const [viewMode, setViewMode] = useState('calendar')
   const [showEffect, setShowEffect] = useState(true) 
   
-  // Mặc định vào là hỏi Login, nhưng tạm để Kim Ngọc
-  const [currentUser, setCurrentUser] = useState('Kim Ngọc')
+  // --- THAY ĐỔI Ở ĐÂY: Mặc định vào là Phúc Lợi ---
+  const [currentUser, setCurrentUser] = useState('Phúc Lợi')
 
   // --- HÀM CHUYỂN USER ---
   const switchUser = (targetUser) => {
@@ -33,13 +33,12 @@ function App() {
     }
   }
 
-  // --- LẤY DỮ LIỆU (QUAN TRỌNG: Lọc ngay từ Database) ---
+  // --- LẤY DỮ LIỆU (Chỉ lấy đúng của người đang đăng nhập) ---
   const fetchTasks = async () => {
-    // Chỉ lấy những dòng mà cột owner == currentUser
     const { data, error } = await supabase
       .from('staff_tasks') 
       .select('*')
-      .eq('owner', currentUser) // <--- SỬA LẠI: CHỈ LẤY ĐÚNG CỦA NGƯỜI ĐANG LOGIN
+      .eq('owner', currentUser) // Lọc cứng theo tên người dùng
       .order('position', { ascending: true }) 
       .order('created_at', { ascending: false })
       
@@ -47,10 +46,10 @@ function App() {
     else setTasks(data || [])
   }
 
-  // --- MỖI KHI ĐỔI NGƯỜI DÙNG -> TỰ ĐỘNG TẢI LẠI LIST CỦA NGƯỜI ĐÓ ---
+  // Tự động tải lại khi đổi người
   useEffect(() => {
     fetchTasks();
-  }, [currentUser]) // <--- Thêm currentUser vào đây để code tự chạy lại khi đổi User
+  }, [currentUser]) 
 
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'todo' ? 'done' : 'todo';
@@ -72,14 +71,14 @@ function App() {
       
       const newTask = { 
         title: title, status: 'todo', category: category, 
-        owner: currentUser, // <--- BẮT BUỘC PHẢI CÓ TÊN
+        owner: currentUser, // Lưu đúng tên người đang đăng nhập
         color: finalColor, start_time: finalDate, 
         created_at: new Date().toISOString(), position: 0 
       };
 
       const { error } = await supabase.from('staff_tasks').insert([newTask]);
       if (error) alert("❌ Lỗi: " + error.message);
-      else fetchTasks(); // Thêm xong tải lại ngay
+      else fetchTasks(); 
     } catch (err) { alert("❌ Lỗi Code: " + err.message); }
   }
 
@@ -111,7 +110,6 @@ function App() {
     }
   };
 
-  // Lọc category để hiển thị vào các cột
   const todoTasks = tasks.filter(t => t.category !== 'Schedule');
   const scheduleTasks = tasks.filter(t => t.category === 'Schedule');
 
