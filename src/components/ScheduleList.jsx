@@ -20,62 +20,64 @@ const ScheduleList = ({ tasks, onAdd, onDelete }) => {
   }) : [];
 
   return (
-    <div className="bg-white border-2 border-green-100 rounded-3xl p-4 w-full h-full max-h-full flex flex-col shadow-xl shadow-green-500/5 overflow-hidden">
-      
-      {/* HEADER NHỎ GỌN */}
-      <div className="flex flex-col gap-2 mb-3 shrink-0">
-        <h3 className="text-green-600 font-black text-lg flex items-center gap-2">
-          <span className="bg-green-100 p-1.5 rounded-lg"><MapPin size={20} /></span>
+    <div className="glass-panel rounded-3xl p-6 w-full h-full max-h-full flex flex-col relative overflow-hidden group border border-white/60 shadow-xl">
+      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-green-200/50 rounded-full blur-3xl group-hover:bg-green-300/50 transition-all duration-700"></div>
+
+      {/* HEADER */}
+      <div className="flex flex-col gap-4 mb-4 shrink-0 relative z-10">
+        <h3 className="text-slate-800 font-extrabold text-sm tracking-wide uppercase flex items-center gap-2">
+          <span className="bg-green-100/80 text-green-600 p-2 rounded-xl shadow-sm"><MapPin size={18} /></span>
           LỊCH TRÌNH
         </h3>
-        
-        {/* DATE PICKER */}
-        <div className="relative w-full">
-            <input 
-                type="date" 
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full pl-8 pr-2 py-1 bg-green-50 border border-green-200 rounded-md text-xs font-bold text-green-700 outline-none focus:ring-1 focus:ring-green-400"
-            />
-            <Calendar className="absolute left-2 top-1.5 text-green-500 pointer-events-none" size={14}/>
+
+        {/* DATE PICKER (Compact) */}
+        <div className="relative w-full group/date">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full pl-9 pr-3 py-3 bg-white/60 border border-white/80 rounded-xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-green-200 focus:ring-4 focus:ring-green-100 transition-all shadow-sm"
+          />
+          <Calendar className="absolute left-3 top-3 text-green-500 pointer-events-none group-focus-within/date:text-green-600" size={16} />
         </div>
       </div>
 
       {/* DANH SÁCH */}
-      <div className="flex-1 overflow-y-auto min-h-0 space-y-2 custom-scrollbar pr-1">
+      <div className="flex-1 overflow-y-auto min-h-0 space-y-2.5 custom-scrollbar pr-1 relative z-10">
         {filteredTasks.map(task => (
-          <div key={task.id} className="group flex items-center gap-2 p-2 rounded-lg border bg-green-50/50 border-green-100 hover:border-green-300 transition-all">
-            <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
-            <span className="font-semibold flex-1 text-xs text-green-800 break-words">
-                {task.title}
+          <div key={task.id} className="group/item flex items-center gap-3 p-3 rounded-xl border bg-white/60 border-white/60 hover:bg-white hover:border-green-200 hover:shadow-lg transition-all">
+            <div className="w-3 h-3 rounded-full bg-green-500 shrink-0 ring-2 ring-green-100"></div>
+            <span className="font-semibold flex-1 text-sm text-slate-800 break-words leading-relaxed">
+              {task.title}
             </span>
-            <button 
-                onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-                className="text-red-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+              className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all opacity-0 group-hover/item:opacity-100"
             >
-                <Trash2 size={14} />
+              <Trash2 size={16} />
             </button>
           </div>
         ))}
-        
+
         {filteredTasks.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-60 text-xs text-center">
-                <p>Chưa có lịch đi đâu.</p>
-            </div>
+          <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-60 text-sm font-medium text-center gap-3">
+            <MapPin size={28} className="opacity-50" />
+            <p>Chưa có lịch trình.</p>
+          </div>
         )}
       </div>
 
       {/* INPUT */}
-      <div className="mt-2 relative group shrink-0 pt-2 border-t border-green-50">
-        <input 
-          type="text" 
-          className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-green-400 rounded-lg py-2 pl-8 pr-2 text-sm text-gray-700 font-medium placeholder-gray-400 outline-none transition-all"
+      <div className="mt-2 relative group/input shrink-0 pt-3 border-t border-white/40 z-10">
+        <input
+          type="text"
+          className="w-full bg-white/60 border border-white/80 focus:bg-white focus:border-green-300 focus:ring-4 focus:ring-green-100 rounded-xl py-3 pl-10 pr-3 text-sm text-slate-800 font-medium placeholder-slate-400 outline-none transition-all shadow-sm"
           placeholder="Đi đâu..."
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Plus className="absolute left-2.5 top-4 text-gray-400 group-focus-within:text-green-500" size={16}/>
+        <Plus className="absolute left-3.5 top-5 text-slate-400 group-focus-within/input:text-green-500 transition-colors" size={18} />
       </div>
     </div>
   );

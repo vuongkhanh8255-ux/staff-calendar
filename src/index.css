@@ -3,5 +3,35 @@
 @tailwind utilities;
 
 body {
-  background-color: #f3f4f6; /* Màu nền xám nhẹ cho toàn web */
+  background-color: #f3f4f6;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel {
+  /* Tăng độ mờ nền trắng lên 0.85 để nổi bật hơn trên nền màu */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  /* Tăng shadow để tách biệt */
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
 }

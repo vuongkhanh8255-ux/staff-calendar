@@ -20,20 +20,26 @@ const ScratchPad = ({ currentUser }) => { // <--- Nhận thêm biến currentUse
   };
 
   return (
-    <div className="bg-[#fefce8] border-2 border-yellow-200 rounded-3xl p-5 h-full flex flex-col shadow-xl shadow-yellow-500/10 relative overflow-hidden">
-      {/* Trang trí background */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-300 opacity-20 rounded-bl-full pointer-events-none"></div>
+    <div className="glass-panel rounded-3xl p-6 h-full flex flex-col relative overflow-hidden group border border-white/60 shadow-xl">
+      {/* Decorative */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-200/40 rounded-full blur-3xl group-hover:bg-yellow-300/40 transition-all duration-700"></div>
 
-      <div className="flex items-center gap-2 mb-4 relative z-10">
-        <span className="bg-yellow-200 text-yellow-700 p-2 rounded-lg"><PenTool size={24} /></span>
-        <h3 className="text-yellow-800 font-black text-xl">
-            GHI CHÚ: {currentUser.toUpperCase()}
+      <div className="flex items-center gap-3 mb-4 relative z-10 transition-all">
+        <div className="bg-yellow-100/80 text-yellow-700 p-2.5 rounded-xl shadow-sm">
+          <PenTool size={22} />
+        </div>
+        <h3 className="text-slate-800 font-extrabold text-xs tracking-wide uppercase">
+          GHI CHÚ: {currentUser.toUpperCase()}
         </h3>
       </div>
-      
+
       <textarea
-        className="flex-1 w-full bg-transparent resize-none outline-none text-gray-700 text-base leading-7 placeholder-yellow-800/30 font-medium"
-        style={{ backgroundImage: 'linear-gradient(transparent 95%, #eab30820 95%)', backgroundSize: '100% 2rem', lineHeight: '2rem' }}
+        className="flex-1 w-full bg-transparent resize-none outline-none text-slate-800 text-base leading-8 placeholder-slate-400 font-medium relative z-10 custom-scrollbar"
+        style={{
+          backgroundImage: 'linear-gradient(transparent 95%, rgba(0,0,0,0.05) 95%)',
+          backgroundSize: '100% 2rem',
+          lineHeight: '2rem'
+        }}
         placeholder={`Nháp nhanh cho ${currentUser}...`}
         value={note}
         onChange={handleChange}
