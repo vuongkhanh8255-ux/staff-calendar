@@ -13,9 +13,7 @@ function App() {
   const [tasks, setTasks] = useState([])
   const [viewMode, setViewMode] = useState('calendar')
   const [showEffect, setShowEffect] = useState(true) 
-  
-  // --- THAY ĐỔI Ở ĐÂY: Mặc định vào là Phúc Lợi ---
-  const [currentUser, setCurrentUser] = useState('Phúc Lợi')
+  const [currentUser, setCurrentUser] = useState('Phúc Lợi') // Mặc định Phúc Lợi
 
   // --- HÀM CHUYỂN USER ---
   const switchUser = (targetUser) => {
@@ -33,12 +31,12 @@ function App() {
     }
   }
 
-  // --- LẤY DỮ LIỆU (Chỉ lấy đúng của người đang đăng nhập) ---
+  // --- LẤY DỮ LIỆU ---
   const fetchTasks = async () => {
     const { data, error } = await supabase
       .from('staff_tasks') 
       .select('*')
-      .eq('owner', currentUser) // Lọc cứng theo tên người dùng
+      .eq('owner', currentUser)
       .order('position', { ascending: true }) 
       .order('created_at', { ascending: false })
       
@@ -46,10 +44,54 @@ function App() {
     else setTasks(data || [])
   }
 
-  // Tự động tải lại khi đổi người
-  useEffect(() => {
-    fetchTasks();
-  }, [currentUser]) 
+  useEffect(() => { fetchTasks() }, [currentUser]) 
+
+  // --- TÍNH NĂNG MỚI: DỜI VIỆC CŨ SANG HÔM NAY ---
+  const moveOverdueTasks = async () => {
+    // 1. Xác định mốc thời gian "Đầu ngày hôm nay" (00:00:00)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 2. Lọc ra những việc: Của mình + Chưa xong + Ngày < Hôm nay + Không phải Lịch trình
+    const overdueTasks = tasks.filter(t => {
+        const taskDate = new Date(t.start_time);
+        return t.owner === currentUser && 
+               t.status === 'todo' && 
+               t.category !== 'Schedule' &&
+               taskDate < today;
+    });
+
+    if (overdueTasks.length === 0) {
+        alert("🎉 Xuất sắc! Không có việc tồn đọng nào.");
+        return;
+    }
+
+    if (!confirm(`Phát hiện ${overdueTasks.length} việc chưa xong từ quá khứ. Dời sang hôm nay nha?`)) return;
+
+    // 3. Chuẩn bị thời gian mới (9h sáng hôm nay)
+    const newTime = new Date();
+    newTime.setHours(9, 0, 0, 0);
+    const newTimeStr = newTime.toISOString();
+
+    // 4. Update lên Database
+    // Vì Supabase v1/v2 update nhiều dòng hơi cực, ta dùng vòng lặp cho chắc ăn (với số lượng ít)
+    let errorCount = 0;
+    for (const task of overdueTasks) {
+        const { error } = await supabase
+            .from('staff_tasks')
+            .update({ start_time: newTimeStr })
+            .eq('id', task.id);
+        if (error) errorCount++;
+    }
+
+    if (errorCount === 0) {
+        alert("✅ Đã dời toàn bộ việc sang hôm nay!");
+        fetchTasks(); // Tải lại dữ liệu mới
+    } else {
+        alert("⚠️ Có lỗi khi dời việc, vui lòng thử lại.");
+    }
+  }
+  // ------------------------------------------------
 
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'todo' ? 'done' : 'todo';
@@ -71,7 +113,7 @@ function App() {
       
       const newTask = { 
         title: title, status: 'todo', category: category, 
-        owner: currentUser, // Lưu đúng tên người đang đăng nhập
+        owner: currentUser,
         color: finalColor, start_time: finalDate, 
         created_at: new Date().toISOString(), position: 0 
       };
@@ -147,7 +189,17 @@ function App() {
 
       {/* GIAO DIỆN CHÍNH */}
       <div className="flex flex-col md:grid md:grid-cols-5 gap-4 mb-4 h-auto md:h-[450px] relative z-10">
-        <div className="w-full md:col-span-2 h-[400px] md:h-full min-h-0 drop-shadow-xl"><TodoList tasks={todoTasks} onToggle={toggleStatus} onAdd={addTask} onDelete={deleteTask} /></div>
+        {/* Truyền hàm moveOverdueTasks vào TodoList */}
+        <div className="w-full md:col-span-2 h-[400px] md:h-full min-h-0 drop-shadow-xl">
+            <TodoList 
+                tasks={todoTasks} 
+                onToggle={toggleStatus} 
+                onAdd={addTask} 
+                onDelete={deleteTask} 
+                onMoveOverdue={moveOverdueTasks} 
+            />
+        </div>
+
         <div className="w-full md:col-span-1 h-[300px] md:h-full min-h-0 drop-shadow-xl"><ScheduleList tasks={scheduleTasks} onAdd={addTask} onDelete={deleteTask} /></div>
         <div className="w-full md:col-span-2 h-[300px] md:h-full min-h-0 drop-shadow-xl"><ScratchPad currentUser={currentUser} /></div>
       </div>
