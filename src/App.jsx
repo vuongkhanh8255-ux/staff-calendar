@@ -13,7 +13,9 @@ function App() {
   const [tasks, setTasks] = useState([])
   const [viewMode, setViewMode] = useState('calendar')
   const [showEffect, setShowEffect] = useState(true) 
-  const [currentUser, setCurrentUser] = useState('Kim Ngọc') // Mặc định vào là nhân viên
+  
+  // Mặc định vào là hỏi Login, nhưng tạm để Kim Ngọc
+  const [currentUser, setCurrentUser] = useState('Kim Ngọc')
 
   // --- HÀM CHUYỂN USER ---
   const switchUser = (targetUser) => {
@@ -31,18 +33,25 @@ function App() {
     }
   }
 
-  // --- LẤY DỮ LIỆU (CHỈ LẤY TỪ staff_tasks) ---
+  // --- LẤY DỮ LIỆU (QUAN TRỌNG: Lọc ngay từ Database) ---
   const fetchTasks = async () => {
+    // Chỉ lấy những dòng mà cột owner == currentUser
     const { data, error } = await supabase
-      .from('staff_tasks') // <--- KHÓA CỨNG VÀO BẢNG NHÂN VIÊN
+      .from('staff_tasks') 
       .select('*')
+      .eq('owner', currentUser) // <--- SỬA LẠI: CHỈ LẤY ĐÚNG CỦA NGƯỜI ĐANG LOGIN
       .order('position', { ascending: true }) 
       .order('created_at', { ascending: false })
-    if (error) console.log('Lỗi:', error)
+      
+    if (error) console.log('Lỗi tải data:', error)
     else setTasks(data || [])
   }
 
-  // --- CÁC HÀM XỬ LÝ KHÁC (Cũng trỏ vào staff_tasks hết) ---
+  // --- MỖI KHI ĐỔI NGƯỜI DÙNG -> TỰ ĐỘNG TẢI LẠI LIST CỦA NGƯỜI ĐÓ ---
+  useEffect(() => {
+    fetchTasks();
+  }, [currentUser]) // <--- Thêm currentUser vào đây để code tự chạy lại khi đổi User
+
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'todo' ? 'done' : 'todo';
     setTasks(tasks.map(t => t.id === id ? { ...t, status: newStatus } : t));
@@ -63,14 +72,14 @@ function App() {
       
       const newTask = { 
         title: title, status: 'todo', category: category, 
-        owner: currentUser, // Lưu tên nhân viên
+        owner: currentUser, // <--- BẮT BUỘC PHẢI CÓ TÊN
         color: finalColor, start_time: finalDate, 
         created_at: new Date().toISOString(), position: 0 
       };
 
       const { error } = await supabase.from('staff_tasks').insert([newTask]);
       if (error) alert("❌ Lỗi: " + error.message);
-      else fetchTasks();
+      else fetchTasks(); // Thêm xong tải lại ngay
     } catch (err) { alert("❌ Lỗi Code: " + err.message); }
   }
 
@@ -102,12 +111,9 @@ function App() {
     }
   };
 
-  useEffect(() => { fetchTasks() }, [])
-
-  // LỌC DATA: Chỉ hiện của người đang đăng nhập hoặc chưa có chủ (nếu có)
-  const currentTasks = tasks.filter(t => t.owner === currentUser || (!t.owner && currentUser === 'Kim Ngọc')); 
-  const todoTasks = currentTasks.filter(t => t.category !== 'Schedule');
-  const scheduleTasks = currentTasks.filter(t => t.category === 'Schedule');
+  // Lọc category để hiển thị vào các cột
+  const todoTasks = tasks.filter(t => t.category !== 'Schedule');
+  const scheduleTasks = tasks.filter(t => t.category === 'Schedule');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-300 to-yellow-200 p-2 md:p-4 font-sans text-slate-800 pb-20 relative overflow-x-hidden">
